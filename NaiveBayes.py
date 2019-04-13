@@ -1,11 +1,8 @@
 import numpy as np
-from sys import argv
 
 import Tarea1.DataReader as dr
 import Tarea1.PlotGenerator as pg
 from Tarea1.Histogram import Histogram
-
-NUM_BUCKETS = 10
 
 
 # returns all histograms
@@ -62,10 +59,9 @@ def count(probabilities, real_classes, theta):
     return tpr, fpr
 
 
-def main():
-    training, testing = dr.data_separator(dr.file_reader("magic04_label.data"), 0.8)
+def naive_bayes(training, testing, bins):
     roc_array = []
-    for b in range(2, 20, 7):
+    for b in bins:
         histograms = get_all_histograms(training, b)
         prob_quotient = []
         real_class = testing[:, -1]
@@ -73,15 +69,16 @@ def main():
             class0_prob = class_probability(d, histograms[0])
             class1_prob = class_probability(d, histograms[1])
             prob_quotient.append(class0_prob / class1_prob)
-        roc = ([], [])
+        roc = ([0], [0])
         theta = np.logspace(np.log10(min(prob_quotient)), np.log10(max(prob_quotient)))
         for t in theta:
             tpr, fpr = count(prob_quotient, real_class, t)
             roc[0].append(tpr)
             roc[1].append(fpr)
         roc_array.append((roc, b))
-    pg.plot_roc(roc_array)
+    return roc_array
 
 
 if __name__ == '__main__':
-    main()
+    training, testing = dr.data_separator(dr.file_reader("magic04_label.data"), 0.8)
+    naive_bayes(training, testing)
